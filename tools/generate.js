@@ -43,7 +43,8 @@ const tags = execFileSync(
   { cwd: ROOT, maxBuffer: 512 * 1024 * 1024, encoding: "utf8" },
 );
 
-const names = [], kinds = [], fileIdx = [], lines = [], sigs = [];
+const names = [], kinds = [], fileIdx = [], lines = [], sigs = [], owners = [];
+const seen = new Set(); // exact dupes (same name/file/line) appear a handful of times — drop them
 const files = [];
 const fileMap = new Map();
 
@@ -112,16 +113,20 @@ for (const line of tags.split("\n")) {
   if (!KINDS.has(kind)) continue;
   let fi = fileMap.get(p[1]);
   if (fi === undefined) { fi = files.length; fileMap.set(p[1], fi); files.push(p[1]); }
-  let lineno = 0, ctagSig = null;
+  let lineno = 0, ctagSig = null, owner = "";
   for (const x of p.slice(4)) {
     if (x.startsWith("line:")) lineno = +x.slice(5);
     else if (x.startsWith("signature:")) ctagSig = x.slice(10);
+    else if (x.startsWith("class:")) owner = x.slice(6); // enclosing class, e.g. Uri.OpaqueUri
   }
-  names.push(p[0]); kinds.push(kind); fileIdx.push(fi); lines.push(lineno);
+  const key = `${p[0]}\t${fi}\t${lineno}`;
+  if (seen.has(key)) continue;
+  seen.add(key);
+  names.push(p[0]); kinds.push(kind); fileIdx.push(fi); lines.push(lineno); owners.push(owner);
   sigs.push(signature(p[0], kind, p[2], ctagSig));
 }
 
-const index = { generated: new Date().toISOString(), files, names, kinds: kinds.join(""), fileIdx, lines, sigs };
+const index = { generated: new Date().toISOString(), files, names, kinds: kinds.join(""), fileIdx, lines, sigs, owners };
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(index));
 console.log(`files=${files.length} symbols=${names.length} -> ${OUT}`);

@@ -25,6 +25,7 @@ interface Index {
   fileIdx: number[];
   lines: number[];
   sigs: string[];
+  owners?: string[]; // enclosing class for members, e.g. Uri.OpaqueUri (empty for top-level types)
   lower?: string[];
   nosep?: string[]; // lowercased name with _ . $ stripped, so graceperiod hits grace_period
   initials?: string[];
@@ -208,7 +209,7 @@ export default function Command() {
             key={`${s.name}:${file}:${s.lines[i]}`}
             icon={{ source: kind.glyph, tintColor: kind.color }}
             title={title}
-            subtitle={s.name ? `${file} · ${s.name}` : file}
+            subtitle={[s.owners?.[i], file, s.name].filter(Boolean).join(" · ")}
             actions={
               <ActionPanel>
                 <Action
