@@ -185,8 +185,8 @@ export default function Command() {
       <List onSearchTextChange={setQuery} searchBarPlaceholder={placeholder}>
         <List.Item
           icon={{ source: "exclamationmark.circle-16", tintColor: "#E8A33D" }}
-          title={sources.failed.length ? `无法加载源: ${sources.failed.join(", ")}` : "没有启用的源"}
-          subtitle={sources.failed.length ? "检查设置里的 json 路径与 base 目录" : "在 Symbolify 设置里勾选并选择符号 json"}
+          title={sources.failed.length ? `Failed to load: ${sources.failed.join(", ")}` : "No sources enabled"}
+          subtitle={sources.failed.length ? "Check the JSON paths and base directories in settings" : "Enable a source in Symbolify settings to start searching"}
         />
       </List>
     );
